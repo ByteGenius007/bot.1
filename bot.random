@@ -1,0 +1,72 @@
+import discord
+import os
+from discord.ext import commands
+import random
+import requests
+
+intents = discord.Intents.default()
+intents.message_content = True
+
+image_folder = 'images'
+
+image_list = [
+    'images (1).jpg', 'images (1).jpg', 'images (1).jpg', 'images (1).jpg', 'images (1).jpg',  # Вероятность появления выше (5 раза)
+    'mem1.jpg', 'mem1.jpg', 'mem1.jpg','mem1.jpg',# Вероятность появления средняя (4 раза)
+    'mem2.jpg', 'mem2.jpg', 'mem2.jpg',
+    'mem3.jpg', 'mem3.jpg',
+    'scale_1200 (2) (1).jpg'# Вероятность появления ниже (1 раза)
+
+]
+
+bot = commands.Bot(command_prefix='$', intents=intents)
+
+@bot.event
+async def on_ready():
+    print(f'rWe have logged in as {bot.user}')
+
+@bot.command()
+async def hello(ctx):
+    await ctx.send(f'Привет! Я бот {bot.user}!')
+
+@bot.command()
+async def heh(ctx, count_heh = 5):
+    await ctx.send("he" * count_heh)
+
+@bot.command()
+async def add(ctx, left: int, right: int):
+    """Adds two numbers together."""
+    await ctx.send(left + right)
+
+@bot.command()
+async def repeat(ctx, times: int, content='repeating...'):
+    """Repeats a message multiple times."""
+    for i in range(times):
+        await ctx.send(content)
+
+@bot.command()
+async def mem(ctx):
+    # Выбор случайного изображения из списка
+    ran = random.choice(image_list)
+    # Выбор случайного изображения из папки
+    #im = os.listdir(image_folder)
+    #ran = random.choice(im)
+    
+    # Открытие и отправка изображения
+    with open(f'{image_folder}/{ran}', 'rb') as f:
+        picture = discord.File(f)
+        await ctx.send(file=picture)
+
+def get_duck_image_url():    
+    url = 'https://random-d.uk/api/random'
+    res = requests.get(url)
+    data = res.json()
+    return data['url']
+
+
+@bot.command('duck')
+async def duck(ctx):
+    '''По команде duck вызывает функцию get_duck_image_url'''
+    image_url = get_duck_image_url()
+    await ctx.send(image_url)
+        
+bot.run("MY_TOKEN")
